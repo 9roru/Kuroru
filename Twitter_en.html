@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kuroru Store</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/9roru/Kuroru/refs/heads/main/avi.ico">
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/avi.ico">
     <style>
     body {
         font-family: Arial, sans-serif;
@@ -334,7 +334,7 @@
         <div class="container">
             <div class="large-title">Kuroru</div>
             <div class="right-buttons">
-                <a href="https://9roru.github.io/Kuroru/TOS_en.html" class="sns-button" target="_blank">TOS</a>
+                <a href="https://9roru.github.io/kuroru/TOS_en.html" class="sns-button" target="_blank">TOS</a>
             </div>
             <div class="search-sort">
                 <div class="form-group">
@@ -359,9 +359,9 @@
     <ul id="fileContent" class="horizontal-list"></ul>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-    const githubFileUrl = 'https://raw.githubusercontent.com/9roru/Kuroru/refs/heads/main/Sr.txt';
+    const githubFileUrl = 'https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/Sr.txt';
     let originalData = [];
-    
+
     function loadAndDisplayFile() {
         fetch(githubFileUrl)
             .then(response => {
@@ -373,7 +373,7 @@
                 originalData = lines.map(line => {
                     const parts = line.split('+');
                     const price = parseFloat(parts[2] || 0);
-                    const formattedPrice = price.toLocaleString('ja-JP', {maximumFractionDigits: 0});
+                    const formattedPrice = price.toLocaleString('ja-JP', { maximumFractionDigits: 0 });
                     return {
                         text: parts[0],
                         number: parts[1],
@@ -389,14 +389,17 @@
                 });
                 updateList();
             })
+            .catch(error => {
+                console.error('エラー:', error.message);
+            });
     }
-    
+
     function updateList() {
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
         const sortSelect = document.getElementById('sortSelect').value;
         let filteredData = originalData.filter(item => item.text.toLowerCase().includes(searchInput));
-        let sortFunction;
+
         let sortByNumberAZ = (a, b) => {
             const assignSortNumber = (item) => {
                 let text = item.text.toLowerCase();
@@ -410,6 +413,7 @@
             let numB = assignSortNumber(b);
             return numA - numB;
         };
+
         let sortByNumberZA = (a, b) => {
             const assignSortNumber = (item) => {
                 let text = item.text.toLowerCase();
@@ -423,20 +427,19 @@
             let numB = assignSortNumber(b);
             return numB - numA;
         };
-        switch(sortSelect) {
+
+        switch (sortSelect) {
             case 'az':
                 filteredData.sort(sortByNumberAZ);
                 break;
             case 'za':
-                sortFunction = (a, b) => b.text.localeCompare(a.text);
+                filteredData.sort(sortByNumberZA); // BxRのロジックを採用
                 break;
             default:
                 filteredData = shuffleArray([...filteredData]);
-                sortFunction = null;
+                break;
         }
-        if (sortFunction) {
-            filteredData.sort(sortFunction);
-        }
+
         const list = document.getElementById('fileContent');
         list.innerHTML = '';
         filteredData.forEach(item => {
@@ -445,7 +448,7 @@
             let imgContainer = document.createElement('div');
             let img = document.createElement('img');
             let cleanedNumberPart = item.number.trim().toLowerCase();
-            switch(cleanedNumberPart) {
+            switch (cleanedNumberPart) {
                 case '0': img.src = 'https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/0.jpg'; break;
                 case '1': img.src = 'https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/1.jpg'; break;
                 case '2': img.src = 'https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/2.png'; break;
@@ -475,7 +478,7 @@
             purchaseButton.className = 'item-button';
             purchaseButton.textContent = 'Purchase';
             purchaseButton.onclick = function() {
-                window.location.href = 'https://9roru.github.io/Kuroru/Link_en.html';
+                window.location.href = 'https://9roru.github.io/kuroru/Link.html';
             };
             infoContainer.appendChild(purchaseButton);
             li.appendChild(infoContainer);
@@ -488,7 +491,7 @@
             list.appendChild(li);
         });
     }
-    
+
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -496,11 +499,45 @@
         }
         return array;
     }
-    
+
+    function loadPromoImage() {
+        const imageUrl = 'https://raw.githubusercontent.com/9roru/kuroru/refs/heads/main/present.png';
+        const banner = document.getElementById('overlayBanner');
+        const container = banner.querySelector('.promo-image-container');
+        
+        fetch(imageUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('画像が見つかりません');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.onload = function() {
+                    const width = this.width + 10;
+                    const height = this.height + 10;
+                    container.style.width = `${width}px`;
+                    container.style.height = `${height}px`;
+                    container.appendChild(this);
+                    banner.classList.remove('hidden');
+                };
+            })
+            .catch(error => {
+                console.error('エラー:', error.message);
+                banner.classList.add('hidden');
+            });
+    }
+
+    function closeBanner() {
+        document.getElementById('overlayBanner').classList.add('hidden');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         loadAndDisplayFile();
         loadPromoImage();
-    
+
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const input = e.target;
             if (!input.value.match(/^[a-zA-Z0-9_]*$/)) {
@@ -509,11 +546,12 @@
             updateList();
         });
         document.getElementById('sortSelect').addEventListener('change', updateList);
+
         const header = document.querySelector('.fixed-header');
         let lastScrollTop = 0;
         let scrollCounter = 0;
         let lastScrollTime = Date.now();
-    
+
         window.addEventListener('scroll', function() {
             let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             let currentTime = Date.now();
